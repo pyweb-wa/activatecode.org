@@ -1,0 +1,169 @@
+
+[mysqld]
+######## START General settings ###############
+
+# General settings
+user = mysql
+pid-file = /var/run/mysqld/mysqld.pid
+socket = /var/run/mysqld/mysqld.sock
+mysqlx_socket=/tmp/xplugin.sock
+port = 3306
+basedir = /usr
+datadir = /var/lib/mysql
+tmpdir = /tmp
+lc-messages-dir = /usr/share/mysql
+bind-address   = 192.168.100.20
+#bind-address  = 127.0.0.1
+log-error-verbosity=3
+innodb_redo_log_capacity=2147483648
+character-set-server  = utf8mb4
+collation-server      = utf8mb4_general_ci
+
+
+auto_increment_increment = 5  # Increment value
+auto_increment_offset = 3  # Offset for each node
+
+
+
+############################## END General settings ##############################
+
+
+
+############################## START wsrep ##############################
+#-
+server-id=2
+# Path to Galera library
+#-
+wsrep_provider=/usr/lib/galera4/libgalera_smm.so
+# Cluster connection URL contains IPs of nodes
+#If no IP is found, this implies that a new cluster needs to be created,
+#in order to do that you need to bootstrap this node
+#-
+#wsrep_cluster_address=gcomm://
+wsrep_cluster_address=gcomm://192.168.100.2,192.168.100.1,192.168.100.20,192.168.100.21
+
+# In order for Galera to work correctly binlog format should be ROW
+#-
+binlog_format=ROW
+
+# Slave thread to use
+#-
+wsrep_slave_threads=16
+#-
+wsrep_log_conflicts
+
+# This changes how InnoDB autoincrement locks are managed and is a requirement for Galera
+#-
+innodb_autoinc_lock_mode=2
+
+# Node IP address
+#-
+wsrep_node_address=192.168.100.20
+
+# Cluster name
+#-
+wsrep_cluster_name=pxc-cluster
+
+#If wsrep_node_name is not specified,  then system hostname will be used
+#-
+wsrep_node_name=pxc-cluster-node-3
+
+#pxc_strict_mode allowed values: DISABLED,PERMISSIVE,ENFORCING,MASTER
+#-
+pxc_strict_mode=ENFORCING
+
+# SST method
+#-
+wsrep_sst_method=xtrabackup-v2
+#-
+pxc_encrypt_cluster_traffic = OFF
+
+############################## END wsrep ##############################
+
+# Number of CPU cores
+innodb_read_io_threads = 16
+innodb_write_io_threads = 16
+innodb_thread_concurrency = 16
+#innodb_force_recovery = 1
+# Number of threads
+innodb_purge_threads = 4
+#innodb_page_cleaner_threads = 4
+innodb_page_cleaners = 4
+#innodb_log_writer_threads = 4
+innodb_log_write_ahead_size=4
+
+#innodb_merge_threads = 4
+thread_cache_size = 64
+#thread_handling = pool-of-threads
+thread_handling = one-thread-per-connection
+
+# Buffer pool size (assuming 128GB RAM)
+innodb_buffer_pool_size = 100G
+
+
+# Storage device type
+innodb_io_capacity = 1500 # Adjust for NVMe SSD
+innodb_io_capacity_max = 3000 # Adjust for NVMe SSD
+
+
+############################## START Performance settings ##############################
+
+default_storage_engine = InnoDB
+#query_cache_type = 0
+#query_cache_size = 0
+key_buffer_size = 256M
+#innodb_buffer_pool_size = 64G
+innodb_buffer_pool_instances = 16
+innodb_flush_log_at_trx_commit = 2
+innodb_log_buffer_size = 16M
+#innodb_log_file_size = 1G
+innodb_flush_method = O_DIRECT
+#innodb_io_capacity = 2000
+#innodb_io_capacity_max = 4000
+#innodb_thread_concurrency = 0
+#innodb_read_io_threads = 64
+#innodb_write_io_threads = 64
+innodb_max_dirty_pages_pct = 90
+innodb_flush_neighbors = 0
+innodb_lru_scan_depth = 4096
+#innodb_page_cleaners = 4
+#innodb_purge_threads = 4
+innodb_change_buffer_max_size = 50
+innodb_adaptive_hash_index = 0
+innodb_doublewrite = 0
+innodb_flush_sync = 0
+innodb_max_undo_log_size = 2G
+#innodb_undo_logs = 128
+#innodb_undo_tablespaces = 127
+innodb_use_native_aio = 0
+innodb_undo_log_truncate = ON
+#innodb_undo_directory = /var/lib/mysql/undo/
+
+############################## END Performance settings ##############################
+
+
+############################## Start Connection setting ##############################
+
+# Connection settings
+max_connections = 3000
+max_allowed_packet = 256M
+wait_timeout = 600
+interactive_timeout = 600
+
+############################## END Connection setting ##############################
+
+############################## START Logging settings ##############################
+
+
+
+log_error = /var/log/mysql/error.log
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 5
+log_queries_not_using_indexes = 1
+log_slow_admin_statements = 1
+#log_slow_slave_statements = 1
+log_slow_replica_statements = 1
+
+############################## END Logging settings ##############################
+

@@ -1,0 +1,4 @@
+@reboot sleep 10 && bash /root/setvlan.sh
+## all_services must be run on one server only
+@reboot sleep 10 && bash /var/www/smsmarket/html/backend/services/all_services.sh
+
