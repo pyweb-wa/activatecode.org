@@ -1,0 +1,149 @@
+<?php
+ob_start();
+session_start();
+
+if (!isset($_SESSION['user_email'])) {
+    header('Location:login.php');
+    die();
+}
+
+?>
+
+    <!DOCTYPE html>
+    <html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>Dashboard - Brand</title>
+        <link rel="shortcut icon" href="assets/img/favicon.png">
+        <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.17/dist/css/bootstrap-select.min.css">
+        <link rel="stylesheet" href=" https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+        <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+        <link rel="stylesheet" href="assets/css/styles.css">
+
+    </head>
+
+    <body id="page-top">
+        <div id="wrapper">
+            <?php
+            
+        include('user_includes/sidebar.html');
+        $site = "https://mixsimverify.com/";
+        ?>
+                <div class="d-flex flex-column" id="content-wrapper">
+
+                    <div id="content">
+                        <?php   include('user_includes/navbar.php');   ?>
+                        <div class="container-fluid">
+
+                            <div class="card shadow">
+                                <div class="card-header py-3">
+                                    <p class="text-primary m-0 font-weight-bold">API Documentation</p>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mt-2  border border-ligh rounded mb-0">
+
+                                        <h2>get applications</h2>
+
+                                        <code> <?php echo $site;?>backend/out_interface.php?api_key=<?php echo $_SESSION['api_key'];?>&action=getapplist</code>
+                                    </div>
+
+                                    <div class="mt-4  border border-ligh rounded mb-0">
+                                        <h2>get balance</h2>
+
+                                        <code> <?php echo $site;?>backend/out_interface.php?api_key=<?php echo $_SESSION['api_key'];?>&action=getbalance</code>
+                                        <br>
+                                        <div class="p-3 mb-2 bg-light text-dark rounded mb-2">
+                                            <h5>Response</h5>
+
+                                            <samp>
+                                                {"ResponseCode":0,"Msg":"OK","Result":{"balance":"50.00"}}
+                                            </samp>
+
+                                        </div>
+                                    </div>
+                                    <div class="mt-4  border border-ligh rounded mb-0">
+                                        <h2>get number</h2>
+
+
+                                        <code> <?php echo $site;?>backend/out_interface.php?api_key=<?php echo $_SESSION['api_key'];?>&action=getnumber&appcode=[appcode]&country=[country]</code>
+                                        <br>
+                                        <div class="p-3 mb-2 bg-light text-dark rounded mb-2">
+                                            <h5>Response</h5>
+                                            <p>
+
+                                                applist and countrys avilable in getapplist request
+                                            </p>
+                                            <samp>
+                                                {"ResponseCode":0,"Msg":"OK","Result":{"id":"58","Number":"84327790731","App":"wa","Cost":"0.12","Balance":49.88}}
+                                            </samp>
+
+                                        </div>
+
+                                    </div>
+                                    <div class="mt-4  border border-ligh rounded mb-0">
+
+                                        <h2>get code</h2>
+                                        <code> <?php echo $site;?>backend/out_interface.php?api_key=<?php echo $_SESSION['api_key'];?>&action=getcode&id=[id]</code>
+
+                                        <div class="p-3 mb-2 bg-light text-dark rounded mb-2">
+                                            <h5>Response</h5>
+
+                                            <samp>
+                                                {"ResponseCode":0,"Msg":"OK","Result":{"SMS":"
+                                        <#> Your WhatsApp code: 123456 You can also tap on this link to verify your phone: v.whatsapp.com/123456 Don't share this code with others 4sgLq1p5sV6","Code":"123456"}}
+                                            </samp>
+
+                                            <p class="mt-2">
+                                                Waiting for sms:
+                                            </p>
+                                            <samp>
+                                                {"ResponseCode":0,"Msg":"waiting for sms","Result":null}
+                                            </samp>
+
+                                        </div>
+
+                                        <div class="mt-4  border border-ligh rounded mb-0">
+
+                                            <h2>get rest number</h2>
+                                            <code> <?php echo $site;?>backend/out_interface.php?api_key=<?php echo $_SESSION['api_key'];?>&action=restnumber</code>
+
+                                            <div class="p-3 mb-2 bg-light text-dark rounded mb-2">
+                                                <h5>Response</h5>
+
+                                                <samp>
+                                                    {"ResponseCode":0,"Msg":"OK","Result":[{"geo":"GH","count":780},{"geo":"EG","count":74},{"geo":"CG","count":1},{"geo":"ID","count":8579},{"geo":"IN","count":835},{"geo":"KH","count":3},{"geo":"RU","count":33},{"geo":"NG","count":2316},{"geo":"KE","count":0},{"geo":"CM","count":6},{"geo":"PE","count":41},{"geo":"HN","count":0},{"geo":"TZ","count":13},{"geo":"ET","count":17},{"geo":"ZM","count":55}]}
+                                                </samp>
+
+
+
+                                            </div>
+
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <?php
+            include('user_includes/footer.php');
+            ?>
+
+                    </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a></div>
+                <script src="assets/js/jquery.min.js"></script>
+                <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/js/bootstrap-select.min.js"></script>
+                <script src="assets/js/theme.js"></script>
+
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+                <script src="https://unpkg.com/bootstrap-table@1.14.2/dist/bootstrap-table.min.js"></script>
+
+    </body>
+
+    </html>

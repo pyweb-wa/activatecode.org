@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="server_props:hash">3d55e83ee9ec864d3a57d496b8d99e7ac36f285f88b10b61860cae7158ebfcfd</string>
+    <int name="year_class_cached_value_2016_pref" value="2012" />
+    <int name="year_class_cached_value_pref" value="2011" />
+    <string name="ab_props:hash">[2,&quot;K\/60QC\/CWxO8oBWGHBgjc45wAJkPfFYmQAEYKf75llmXIOMH9B0z90YYfHf7eYVpMKCZbeMZu1CtUpCTjl3REg&quot;,&quot;\/NX4OuVPqKdpb6sw5okm4Q&quot;,&quot;kynwyw&quot;,&quot;n8AFQyvOZCuUpGCFFqccTg&quot;]</string>
+    <string name="file_date">20230113</string>
+    <int name="file_index" value="0" />
+    <set name="ab_offline_props:offline_exposure_strings">
+        <string>language_selector_universe_global|language_selector_experiment_global|test</string>
+    </set>
+</map>

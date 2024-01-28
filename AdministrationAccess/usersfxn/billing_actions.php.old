@@ -1,0 +1,145 @@
+<?php
+
+session_start();
+if (!isset($_SESSION['name']) || !isset($_SESSION['level']) || $_SESSION['level'] != "rootlevel") {
+    header('Location:https://' . $_SERVER["SERVER_NAME"] . '/404.php', true, 301);
+    die();
+}
+
+
+if (!isset($_POST['user_id'])) {
+    echo "something went wrong";
+    die();
+}
+if (empty($_POST['user_id'])) {
+    echo "something went wrong";
+    die();
+}
+$user_id = $_POST['user_id'];
+if (isset($_POST['amount'])) {
+    if (!empty($_POST['amount'])) {
+        $amount = (float)$_POST['amount'];
+        $typ = "Real";
+        $desc = "Customer recharge Real";
+        if ($amount < 0) {
+            $typ = "Reduction";
+            $desc = "Administration reduction";
+        }
+        if ($amount != 0) {
+
+            // Append amount into balance
+            require_once './../../backend/config.php';
+            //get admin balance
+            if ($_SESSION["is_super"] != 1) {
+                $sql = "SELECT balance from cms_users WHERE Id_User = ?";
+                $stmt_b = $pdo->prepare($sql);
+                $stmt_b->execute([$_SESSION['id']]);
+                $res = $stmt_b->fetchAll();
+                if (count($res) >= 1) {
+                    $admin_balance = $res[0]['balance'];
+                    if (intval($admin_balance) < intval($amount)) {
+                        echo "NoBalance";
+                        die();
+                    }
+                } else {
+                    echo "unkown";
+                    die();
+                }
+            
+                if($amount <0){
+                    $sql = "SELECT Balance from users WHERE Id = ?";
+                    $stmt_u = $pdo->prepare($sql);
+                    $stmt_u->execute([$user_id]);
+                    $res = $stmt_u->fetchAll();
+                    if (count($res) >= 1) {
+                    $user_balance = $res[0]['Balance'];
+                    if($amount*(-1) > $user_balance){
+                        echo "NoBalance";
+                        die();
+                    }
+                }else{
+                    echo "unkown";
+                    die();
+
+                }
+
+                }
+
+            }
+            $stmt = $pdo->prepare("UPDATE users set `Balance`=`Balance`+? where Id=? ");
+            $stmt->execute([$amount, $user_id]);
+
+            if ($_SESSION["is_super"] != 1) {
+                if($amount <0){
+                    $sql = "UPDATE cms_users set `balance`=`balance`+? where Id_User=?";
+                    $stmt = $pdo->prepare($sql);
+                    $r = $amount *(-1);
+                    $stmt->execute([$r, $_SESSION['id']]);
+
+                }
+                else{
+                    $sql = "UPDATE cms_users set `balance`=`balance`-? where Id_User=?";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([$amount, $_SESSION['id']]);
+                }
+            
+
+            $desc = "administration discount";
+            $stmt_admin_t = $pdo->prepare("INSERT INTO `transaction`( `customerID`, `debit`, `credit`, `description`, `notes`,`fapi_id`,`transDate`) VALUES (?,0,?,?,'',0,? )");
+            $stmt_admin_t->execute([$_SESSION['id'], $amount, $desc, date("Y-m-d")]);
+
+            }
+            $stmt2 = $pdo->prepare("INSERT INTO `recharge`(`customer_id`, `amount`, `recharge_date`, `gate_id`,`type`) VALUES (?,?,NOW(),1,?)");   //gateid 1 is cache
+            $stmt2->execute([$user_id, $amount, $typ]);
+            $stmt5 = $pdo->prepare("INSERT INTO `transaction`( `customerID`, `debit`, `credit`, `description`, `notes`,`fapi_id`,`transDate`) VALUES (?,?,0,?,'',0,? )");
+            $stmt5->execute([$user_id, $amount, $desc, date("Y-m-d")]);
+
+            if (isset($_POST['gift']) && $_SESSION["is_super"] == 1 ) {
+                if (!empty($_POST['gift'])) {
+                    $gift = (float)$_POST['gift'];
+                    if ($gift != 0) {
+                        $stmt3 = $pdo->prepare("UPDATE users set `Balance`=`Balance`+? where Id=? ");
+                        $stmt3->execute([$gift, $user_id]);
+                        $stmt4 = $pdo->prepare("INSERT INTO `recharge`(`customer_id`, `amount`, `recharge_date`, `gate_id`,`type`) VALUES (?,?,NOW(),1,'Gift')");   //gateid 1 is cache
+                        $stmt4->execute([$user_id, $gift]);
+
+                        $stmt6 = $pdo->prepare("INSERT INTO `transaction`( `customerID`, `debit`, `credit`, `description`, `notes`,`fapi_id`) VALUES (?,?,0,'Customer recharge gift','',0 )");   //gateid 1 is cache
+                        $stmt6->execute([$user_id, $gift]);
+                    }
+                }
+            }
+            $_SESSION['balance'] = $_SESSION['balance'] - $amount;
+            echo "Success";
+            die();
+        }
+    }
+} else if (isset($_POST['get'])) {
+    if ($_POST['get'] == 'balance') {
+        require_once './../../backend/config.php';
+        $stmt = $pdo->prepare("select Balance from users where Id =? ");
+        $stmt->execute([$user_id]);
+        $row = $stmt->fetch();
+        echo (json_encode($row));
+        die();
+    } else if ($_POST['get'] == 'history') {
+        require_once './../../backend/config.php';
+        $stmt = $pdo->prepare("SELECT `recharge_id` as 'id',  `amount`, `recharge_date`, `payment_gatewaycol` as 'gateway' ,`type` FROM `recharge`  ,`payment_gateway` where `recharge`.`gate_id`=`payment_gateway`.`gate_id` and `recharge`.`customer_id`=? order by `recharge_id` desc ");
+        $stmt->execute([$user_id]);
+        $rows = $stmt->fetchAll(); //fa fa-gift
+        $jarray = [];
+        foreach ($rows as $row) {
+            if ($row['type'] == 'Gift') {
+                $row['type'] = '<button type="button" class="btn btn-info  "><i class="fa fa-gift" aria-hidden="true"></i> Gift</button>';
+            } else {
+                $row['type'] = '<button type="button" class="btn btn-success  "><i class="fas fa-dollar-sign" aria-hidden="true"></i> Real</button>';
+            }
+            array_push($jarray, $row);
+        }
+        echo (json_encode($jarray));
+        die();
+    }
+}
+
+
+
+echo "something went wrong";

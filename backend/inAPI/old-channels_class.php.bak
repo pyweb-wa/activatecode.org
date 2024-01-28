@@ -1,0 +1,240 @@
+<?php
+
+class old_channels
+{
+    public function __construct()
+    {
+        include 'config.php';
+        include_once "mylogger.php";
+
+        $this->logger = new MyLogger();
+        $this->pdo = $pdo;
+
+    }
+    //public $simcode_token;
+
+    public function getchannels($countries, $uuid, $cnt = null, $first)
+    {
+        try {
+            $result = (object) [
+                'ResponseCode' => 1,
+                'Msg' => 'OK',
+                'Result' => null,
+                'ANY' => '',
+                'Id' => '',
+            ];
+           
+            
+            // $response = [
+            //     'Id' => '4444444444',
+            //     'Code' => 0,
+            // ];
+            //TODO UNCOMMENT in production
+            $response = $this->askforchannels($uuid, $cnt, $countries, $first);
+           
+
+        } catch (Exception $e) {
+            $this->logger->Add($e->getMessage(), basename(__FILE__));
+        }
+        //$result->Result = $response;
+        //TODO NEED return ID in Result
+        $any = "ANY";
+        if (isset($response["Code"])) {
+            if ($response['Code'] == 0) {
+
+                if(isset($response['Data'])){
+                    $any = sizeof($response['Data']);
+                }
+
+
+
+                $result->ResponseCode = 0;
+                $result->Msg = "OK";
+                $result->Result = (object) [
+                    'Id' => $response['Id'],
+                    
+                ];
+                $result->Id = $response['Id'];
+                $result->ANY = $any;
+            }
+        } else {
+            $result->Msg = "error";
+        }
+
+        $this->logger->Add(json_encode($result), basename(__FILE__));
+        //
+        return $result;
+    }
+
+    private function askforchannels($uuid, $cnt, $countries, $first)
+    {
+
+        $date = date_create();
+        $uuid = md5($uuid . date_timestamp_get($date));
+        $myarray = array(
+            't' => date_timestamp_get($date),
+            'channel' => "PVUTdPeXI",
+            'key' => "K2dU3o94rEh0",
+            'callBackUrl' => "http://old-channels.mixsimverify.com/receiver2.php?id=" . $uuid,
+            'cnt' => $cnt,
+            'countries' => $countries ,
+            'first' => $first,
+            'upType' => 1,
+            'needKeys' => "client_static_keypair_pwd_enc",
+        );
+
+        // $myarray = array(
+        //     't' => date_timestamp_get($date),
+        //     'channel' => "PVUTdPeXI",
+        //     'key' => "K2dU3o94rEh0",
+        //     'callBackUrl' => "http://old-channels.mixsimverify.com/receiver2.php?id=" . $uuid,
+        //     'cnt' => '1',
+        //     'countries' => "",
+        //     'first' => '1',
+        //     'upType' => 1,
+        //     'needKeys' => "client_static_keypair_pwd_enc",
+        // );
+        $keys = array_keys($myarray);
+        sort($keys);
+        $sig = "";
+        $myobj = "";
+        foreach ($keys as $key) {
+            if ($key == "key") {
+                continue;
+            }
+
+            $sig .= $key . "=" . $myarray[$key];
+            $myobj .= $key . "=" . $myarray[$key] . "&";
+        }
+        $sig = $sig . $myarray['key'];
+        $sig = md5($sig);
+        $myobj = $myobj . "sig=" . $sig;
+
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_PORT => "9940",
+            CURLOPT_URL =>  "http://161.117.234.9/owxmdghqgx/", #"http://juwuat.74hcjs.com:10238/nMl4aQIaZ9hU/",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 50,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $myobj,
+            CURLOPT_HTTPHEADER => [
+                "Content-Type: application/x-www-form-urlencoded",
+            ],
+           
+        ]);
+
+        $response = curl_exec($curl);
+        
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+            echo "cURL Error #:" . $err;
+        } else {
+        file_put_contents("/var/www/html/oldChannels/test.log","id: ".$uuid."   ".$response."\n\n",FILE_APPEND);
+
+            $response = json_decode($response, true);
+            $response['Id'] = $uuid;
+            if (sizeof($response['Data'])>=0){
+               
+                $this->savetofile($response,$uuid);
+                
+            }
+            return $response;
+        }
+
+        return "error";
+    }
+
+    private function savetofile($req_dump,$id)
+    {
+        $filepath = '/var/www/html/oldChannels/';
+        try {
+                // if (isset($req_dump->Result['Id'])) {
+                //     $sig = $req_dump->Result['Id'];
+        
+                //     //echo json_encode($req_dump);
+                //     $myObj = new stdClass();
+                //     $myObj->Code = 0;
+                //     $myObj->Data = $req_dump['updataJson'];
+                //     $count = 0;
+                //     //TODO
+                //     //not work need test
+                //     if (is_array($myObj->Data)) {
+                //         $count = sizeof($myObj->Data);
+        
+                //     }
+        
+                $result = json_encode($req_dump, JSON_UNESCAPED_SLASHES);
+                //$result = stripslashes(json_encode($req_dump, JSON_UNESCAPED_SLASHES));
+                    $result = str_replace('"[{', '[{', $result);
+                    $result = str_replace('}]"', '}]', $result);
+        
+                    //file_put_contents('data/'.date('m-d-Y_h_i_s', time()).$id.".txt",$result);
+                   
+                    file_put_contents($filepath . $id, $result,FILE_APPEND);
+                    // echo file_get_contents('data/'.$sig);
+                    //$check = check($id, $count);
+        
+               // }
+            // } else {
+            //     file_put_contents($filepath . "logging.log", 'not json\n', FILE_APPEND);
+            //     echo "not json";
+            // }
+        } catch (Exception $e) {
+            file_put_contents($filepath . "logging.log", 'Caught exception: ' . $e->getMessage() . "\n", FILE_APPEND);
+            //echo 'Caught exception: ',  $e->getMessage(), "\n";
+        }
+
+    }
+
+    public function isJson($string)
+    {
+        json_decode($string, JSON_UNESCAPED_SLASHES);
+        return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    public function check($sig, $count)
+    {
+        //require_once 'config_007.php';
+
+        $filepath = '/var/www/html/oldChannels/';
+        $query = "SELECT * FROM `channels_log` WHERE srv_req_id = ?  limit 1 ";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute([$sig]);
+        $items = $stmt->fetchall();
+        if (sizeof($items) == 1) {
+            $sql = "UPDATE `channels_log` SET Status=? , return_count=? WHERE srv_req_id=?";
+            $stmt1 = $this->pdo->prepare($sql);
+            $stmt1->execute(["Finished", $count, $sig]);
+            file_put_contents($filepath . "test.log", '\n countdb= ' . $items[0]['quantity'] . "\ncountserv=" . $count . "\n", FILE_APPEND);
+            file_put_contents($filepath . "logging.log", '\n countdb= ' . $items[0]['quantity'] . "\ncountserv=" . $count . "\n", FILE_APPEND);
+
+            //   if ($items[0]['quantity'] != $count) {
+            //      checkquantity();
+            // }
+
+            return 1;
+            //array_push
+        }
+
+    }
+
+    public function checkquantity($sig, $count)
+    {
+        //TODO
+        if ($count == 0) {
+            //refund
+        }
+
+        echo "check quentity <br/>";
+        return;
+
+    }
+}

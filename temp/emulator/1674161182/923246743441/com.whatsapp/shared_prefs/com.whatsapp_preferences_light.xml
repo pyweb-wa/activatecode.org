@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<map>
+    <int name="privacy_last_seen" value="0"/>
+    <boolean name="fingerprint_authentication_needed" value="true"/>
+    <int name="prefs_migration_version" value="8"/>
+    <long name="phoneid_timestamp" value="1608468602170"/>
+    <string name="perf_device_id">2375afd3-eeb3-457e-a58e-bcb35a752c7c</string>
+    <string name="ph">3246743441</string>
+    <int name="registration_sms_code_length" value="6"/>
+    <string name="sticker_hash_salt">tox9CV63yMbfxkooZFwnvLPQdHRO1LscCplGZDn4Q7E=</string>
+    <string name="phoneid_id">ab71a4a4-7064-4989-8104-40b5577b5b29</string>
+    <string name="last_datacenter">nao</string>
+    <int name="privacy_status" value="0"/>
+    <long name="software_forced_expiration" value="0"/>
+    <string name="version">2.20.201.21</string>
+    <int name="reg_attempts_verify_code" value="1"/>
+    <long name="client_version_upgrade_ephemeral_timestamp" value="1608468599646"/>
+    <string name="private_stats_id">b12d103a-ec80-4e1d-8b30-e075d09abea9</string>
+    <int name="c2dm_app_vers" value="205121000"/>
+    <long name="sticker_store_backoff_time" value="0"/>
+    <long name="live_location_sharing_session_start_time" value="0"/>
+    <boolean name="bad_signed_pre_key_check_done" value="true"/>
+    <long name="live_location_sharing_session_total_time" value="0"/>
+    <string name="registration_jid">923246743441</string>
+    <int name="logins_with_messages" value="1"/>
+    <boolean name="is_eula_loaded_once" value="true"/>
+    <string name="web_contact_checksum">2PpjwXMU07GVq7C3
+    </string>
+    <long name="app_background_time" value="4823354"/>
+    <long name="client_server_time_diff" value="0"/>
+    <long name="block_list_receive_time" value="1608468718765"/>
+    <boolean name="refresh_broadcast_lists" value="false"/>
+    <int name="phonebook_null_cursor_count" value="0"/>
+    <boolean name="group_participant_migration_reset_fix" value="true"/>
+    <boolean name="saved_gcm_token_server_unreg" value="true"/>
+    <int name="registration_state" value="2"/>
+    <boolean name="verification_level_consolidation_notification" value="true"/>
+    <boolean name="new_jid" value="false"/>
+    <int name="connection_sequence_attempts" value="0"/>
+    <long name="wa_last_reminder_timestamp" value="1608468729485"/>
+    <string name="my_current_status">Hey there! I am using WhatsApp.</string>
+    <boolean name="async_tasks_pending_for_version_change" value="false"/>
+    <boolean name="spam_banned" value="false"/>
+    <long name="gdrive_next_prompt_for_setup_timestamp" value="1609073529493"/>
+    <int name="reg_attempts_check_exist" value="1"/>
+    <boolean name="input_enter_send" value="false"/>
+    <string name="routing_info">CAwIBQ</string>
+    <string name="cc">92</string>
+    <int name="privacy_profile_photo" value="0"/>
+    <int name="profile_photo_thumb_id" value="1588671225"/>
+    <string name="registration_failure_reason"/>
+    <int name="registration_voice_code_length" value="6"/>
+    <long name="message_store_verified_time" value="1608468717981"/>
+    <string name="c2dm_reg_id">c7RCgKFDEQ0:APA91bGiPbnz7Pdwp8ejv0jodegM3EPAX1tn3VvbTatKmDIE8ubEJiboiWeWyeXpf5uK4YbntQ3BGe4DgQ5d6aWDy2zbvgaX8RItl6n5Lg_HO8WC-591m06NLPNTJEB0UsSvSrKhU1EN</string>
+    <int name="reg_attempts_generate_code" value="1"/>
+    <boolean name="read_receipts_enabled" value="true"/>
+    <long name="next_daily_cron_catchup" value="1608469505980"/>
+    <long name="eula_accepted_time" value="1608468606249"/>
+    <long name="live_location_sharing_session_end_time" value="0"/>
+    <boolean name="need_to_get_pre_key_digest" value="false"/>
+    <int name="sticker_store_backoff_attempt" value="0"/>
+    <boolean name="force_db_check" value="false"/>
+    <boolean name="underage_account_banned" value="false"/>
+    <long name="dithered_last_signed_prekey_rotation" value="1607764000996"/>
+    <string name="registration_code">300439</string>
+    <string name="com.whatsapp.registration.RegisterPhone.mistyped_state">6</string>
+    <long name="client_ntp_time_diff" value="2"/>
+    <long name="client_version_upgrade_timestamp" value="1608468599646"/>
+    <boolean name="signal_protocol_store_is_new" value="false"/>
+    <long name="last_ntp_client_time" value="1608468728526"/>
+    <long name="spam_banned_expiry_timestamp" value="0"/>
+    <boolean name="report_unhealthy_module" value="true"/>
+    <int name="privacy_groupadd" value="0"/>
+    <string name="upload_token_random_bytes">9Pw/4e7/uxDHv7QNDhhnIQfTMQAPiPaQGacfmhg6vWI</string>
+    <long name="last_login_time" value="1608468724"/>
+    <long name="last_heartbeat_login" value="1608390448997"/>
+    <string name="direct_migration_session_id">3df132a33955f59b</string>
+    <string name="sticker_store_etag">4ab5dcb701bb65ae7d6795def90c99af</string>
+    <long name="sticker_store_last_fetch_time" value="1608468731295"/>
+    <int name="profile_photo_full_id" value="1588671225"/>
+</map>

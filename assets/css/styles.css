@@ -1,0 +1,28 @@
+.progress {
+    position: relative;
+}
+
+.progress span {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: #fff;
+    text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+}
+
+.number_btn {
+    border-radius: 10px;
+}
+
+.pending_animation {
+    background-color: orange;
+    transition: background-color 1s;
+}
+
+tr {
+    transition: background-color 1s;
+}
+
+.pending_animation_clear {
+    background-color: white;
+}

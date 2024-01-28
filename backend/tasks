@@ -1,0 +1,172 @@
+1- Code Deployment and Server Management:
+    - Make controller data real-time using a real-time database
+    - Delete old data automatically
+    - move data from redis_numbers table to history every two day if still use this table
+    - get available 1 as price_out, need to be dynamic , (need to edit country_stats to set application and application code and price)
+    - download no-sms numbers from box
+    - show users and admin ip log with country in admin super page ==> TA []
+
+2- Database Management:
+    - Replace redis_numbers MySQL table with a Redis table (we move all redis_numbers to redis db but fe facing problem with get the count all requested and has sms numbers from redis. it's take tooooo times so we still tell now in mysql)
+    - remove all unused tables    
+
+3- Security:
+    - remove all uneed files from administrationAccess and all the project
+    - Change SSH port and server passwords
+    - After enabling callbackurl, add a URL checker that checks URL availability to disable the account in case of problems with the URL
+    - ip logger for admin login (add table in db add column for distination panel log both panel[adminAccess-controller]) ==> Ta
+    - Set monitor for Redis performance
+    
+
+4- Messaging and Callbacks:
+    - Add receive SMS to Redis for sending to users using a callback URL
+    - Add live log to the controller like https://sms.goonline.company/stats/tailer.php
+    - Add request number to the controller page (the ability to request a test number from the controller panel)
+    
+5- Code Editing and Procedure Modification:
+    - Check this view https://activatecode.org/controller/country/Box_info2.php
+
+
+6- Redis Integration:
+    - Reactivate from Redis number
+    - Move history log to Redis server
+    - Move check service to Redis
+    - Move requests log to Redis
+    - Move balance into Redis server
+
+
+7- Standardization and Optimization:
+    - Force all to use getbulk_numbers
+    - Setup a Telegram bot for server load and error handling events for Nginx, MySQL, Redis
+
+
+
+
+
+############################# Need confirmation #############################
+
+
+
+#############################################################################
+
+
+
+=======================D O N E=========================
+- download numbers from waiting list 
+- Dashboard_Links.php [tozbet shakel] 
+- avoid the random timestamp with random zone in get number from redis as ID for number ("bananaapi GetNumber_From_Redis") 
+- bulknumber check all and finished
+- check valid token with redis , need to edit admin page to set token and out_interface to read token
+- 01/07/2024 - need to create login page for controlleeerrr  (IMPORTANTTTTTTTTT) 
+- 01/07/2024 - run mysql get processlist when in get_load.php script when the mysql threads was more then 100
+- 01/08/2024 - setup new server (server3) and add it to loadblanacer. ( ba3d fe add to mysql cluster)
+- 01/08/2024 - change sms.goonline api(activatecode) url to api.activatecode.org (loadbalancer)
+- 01-09-2024 - upgrade digitalsim server to redis
+- add new server (server3) to  the cluster
+- 14-01-2024 -  create page that show user rate by country and date (example query in the end of this file **2)
+- 16-01-2024 need to set access permission between token and country in redis and create a page in admin panel for change the permistion, and set implemented in out_interface.php
+- 16-01-2024 purchasePro2	PROCEDURE  need to edit for adding one record to transaction table in bulk_number method with the cost of taked numbers.
+- 16-01-2024 Set up permissions for all users when adding a new source and remove permissions from all users when removing a source
+- 16-01-2024 Change refunds service to insert one transaction for multiple numbers for the same user and make one update to the balance
+- 18-01-2024  Create a map for Redis key exist in this file
+- 20-01-2024 working on adminpage to set balance to admin and create users balance base on admin balance
+- 21-01-2024 :
+    - Remove status 0 from get_available request
+    - tmux named in all servers
+    - get_available from redis
+    - Setup a new Redis server for permissions and others, then numbers on server3 (we use server3 for redis_numbers table and will be use for other high traffic requests)
+- 22-01-2024:
+    - fix getbalance on all servers 1,2,3 5arabta bl update le 3mltoooo
+    - apply mutiple application on activatecode DONE need testing in monday 
+    - get_availabe for multiple application DONE  need to apply on all servers
+    - fix request number from dashboard
+    - add application to create box for multiple app
+    - test multiple app with telegram and google
+    - fix get multiapp in banana-api ( ossaaa)
+    - https://activatecode.org/AdministrationAccess/customer_prop.php not load data when users < 2
+- 23-01-2024:
+    - Find a way to push updated code to all servers (IMPORTANTTTTTTTTT) using rsync on server2 /root/rsync
+    - review database
+
+- 25-01-2024:
+    - Edit purchasePro2 procedure for adding one record to the transaction table in the bulk_number method with the cost of taken numbers 
+- 26-01-2024:
+    - download requested numbers
+    - add other users to history log
+    - display application in boxs
+    - check in all administrationaccess pages if user support or not before open the page
+    - Backup users balance every 1 hour 
+- 27-01-2024:
+    - create a map for tmux names and set app tmux to run on boot on all servers  in server2 services
+    - enable start,stop time in activatecode card
+    - check whatsapp api
+    - iptables rule for the cluster
+    - idoor BUGGGG in add balance to user, when admin is not supper it's can add balance to any users hen he change the user Id in the request, need to be solve.
+    - maybe if  non-supper admin  send two request at the same time to add balance to the user it will be bypass here balance amount, need to set lock table or use tansaction on this function
+    - When adding new users no need to add user_countries for all countries , it's take long time, just add for available countries in the countries_control
+----------------------------------------------------
+
+----------------------------------------------------
+
+
+
+##############
+redis key map:
+##############
+
+server2:
+-----------
+
+1- check_api: contain the token of users with value 0 or 1 to set and check the validation of api_key
+    used in :
+    - AdministrationAccess/usersfxn/edituser.php  => set 
+    - backend/out_interface.php => get
+2- countries_box: contain all available box in controller page, used for get the available country 
+    used in:
+    - backend/out_interface.php:.php get
+    - backend/outAPI/Jikatel_api.php set
+3- CountryPerm: used for set permission for every source and user
+    used in:
+    - backend/out_interface.php get
+    - AdministrationAccess/servicesfxn/usersPermissions.php set
+    - controller/country/Box_info.php set
+    - backend/inAPI/banana-api_class.php get
+4- server_loads: used for set and get servers mysql and nginx loads
+    used in:
+    - backend/services/get_loads.php set
+    - controller/country/countryapi.php get
+5- simberry : contain all taked number by source, used to get this numbers and sended to simberry cloud to set them into route then move them to redis todelete hash
+    used in:
+    - backend/inAPI/banana-api_class.php set
+    - backend/services/simberry_sender.php:server2 get and delete
+6- todelete: used for set taked numbers from simberry hash with time and send it to simberry as delete after 6 minute
+    used in:
+    - backend/services/featchandsend.php get
+    - backend/services/simberry_sender.php:server2 set
+7- users_rate: used for save users numbers rate (total geted numbers/ received sms) by country
+    used in:
+    - backend/services/users_rate.php set
+    - AdministrationAccess/users_rate.php get (main server)
+8- direct source like CL_34_807,IR_34_808,...  used for save numbers in waiting list for move then to live list when numbers ended
+    used in:
+    - backend/services/phone_redisInserting.php server 2 set
+    - backend/services/mysql_insert.php get and delete
+9- live_xxxx: used as live table to serving numbers
+    used in:
+    - backend/inAPI/banana-api_class.php get
+    - backend/services/mysql_insert.php set
+    - backend/outAPI/middelwareapi_outAPI.php set numbers after failer
+10- source_list used for save all available source and used for waiting
+    used in:
+    - backend/services/phone_redisInserting.php set
+
+######
+server3:
+-------
+11- redis_numbers: used for save all taked numbers with all informations:
+    used in:
+    - backend/inAPI/banana-api_class.php set
+    
+
+
+----------------------------------------------------------------------------------------
