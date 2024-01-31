@@ -17,47 +17,176 @@ session_start();
 
 //     if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $recaptcha->score >= 0.5 || $_SERVER['REMOTE_ADDR'] == 'localhost') {
 
+
+
+    // $ip_address = '';
+// if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+//     $ip_address = $_SERVER['HTTP_CLIENT_IP'];
+// }
+// //whether ip is from proxy
+// elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+//     $ip_address = $_SERVER['HTTP_X_FORWARDED_FOR'];
+// }
+// //whether ip is from remote address
+// else {
+//     $ip_address = $_SERVER['REMOTE_ADDR'];
+// }
+// $country = getCountry();
+// $user_id = 0;
+// $user_token = '';
+// $email = '';
+// $cpanel = 'AdministrationPanel';
+// $state ='';
+// if (isset($_POST['email']) && isset($_POST['password'])) {
+//     if (!empty($_POST['email']) && !empty($_POST['password'])) {
+//         $email = $_POST['email'];
+
+//         if (strlen($email) > 63  || (strpos($email, '@') == false)) {
+
+//             header('Location:login.php');
+//             die();
+//         }
+//         $passwd =  password_hash($_POST['password'], PASSWORD_DEFAULT);
+//         try {                
+//             require_once './../backend/config.php';
+//             $stmt = $pdo->prepare("SELECT `Id_User`,`email`,`Passwd`,`Name`,`is_super`,`token`,`balance` FROM `cms_users` WHERE `email` =?");
+//             $stmt->execute([$email]);
+//             $json = $stmt->fetch();
+//             if ($json["Passwd"]) {
+//                 if ($email == $json["email"] && password_verify($_POST['password'], $json["Passwd"])) {
+//                     $user_id = $json["Id_User"];
+//                     $user_token = $json["token"];
+//                     $_SESSION['id'] = $user_id ;
+//                     $_SESSION['valid'] = true;
+//                     $_SESSION['timeout'] = time();
+//                     $_SESSION['email'] = $email;
+//                     $_SESSION['level'] = "rootlevel";
+//                     $_SESSION['name'] =  $json["Name"];
+//                     $_SESSION['is_super'] = $json["is_super"];
+//                     $_SESSION['token'] = $user_token;
+//                     $_SESSION['balance'] = $json["balance"];
+//                     header('Location:users.php');
+//                     die();
+//                 }
+//             }
+//         } catch (Exception $e) {
+//             echo $e->getMessage();  
+//             header('Location:login.php');
+//             die();
+//         }
+//     }
+// }
+ 
+// header('Location:login.php');
+// die();
+
+$ip_address = '';
+
+if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+    $ip_address = $_SERVER['HTTP_CLIENT_IP'];
+} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $ip_address = $_SERVER['HTTP_X_FORWARDED_FOR'];
+} else {
+    $ip_address = $_SERVER['REMOTE_ADDR'];
+}
+
+$country = getCountry();
+$user_id = 0;
+$user_token = '';
+$email = '';
+$cpanel = 'AdministrationPanel';
+$state = ''; 
+
 if (isset($_POST['email']) && isset($_POST['password'])) {
     if (!empty($_POST['email']) && !empty($_POST['password'])) {
         $email = $_POST['email'];
 
-        if (strlen($email) > 63  || (strpos($email, '@') == false)) {
+        if (strlen($email) > 63  || (strpos($email, '@') === false)) {
+            $state = 'Invalid Email';
+        } else {
+            try {
+                require_once './../backend/config.php';
 
-            header('Location:login.php');
-            die();
-        }
-        $passwd =  password_hash($_POST['password'], PASSWORD_DEFAULT);
-        try {                
-            require_once './../backend/config.php';
-            $stmt = $pdo->prepare("SELECT `Id_User`,`email`,`Passwd`,`Name`,`is_super`,`token`,`balance` FROM `cms_users` WHERE `email` =?");
-            $stmt->execute([$email]);
-            $json = $stmt->fetch();
-            if ($json["Passwd"]) {
-                if ($email == $json["email"] && password_verify($_POST['password'], $json["Passwd"])) {
-                    $_SESSION['id'] = $json["Id_User"];
-                    $_SESSION['valid'] = true;
-                    $_SESSION['timeout'] = time();
-                    $_SESSION['email'] = $email;
-                    $_SESSION['level'] = "rootlevel";
-                    $_SESSION['name'] = $json["Name"];
-                    $_SESSION['is_super'] = $json["is_super"];
-                    $_SESSION['token'] = $json["token"];
-                    $_SESSION['balance'] = $json["balance"];
-                    header('Location:users.php');
-                    die();
+                $stmt = $pdo->prepare("SELECT `Id_User`,`email`,`Passwd`,`Name`,`is_super`,`token`,`balance` FROM `cms_users` WHERE `email` =?");
+                $stmt->execute([$email]);
+                $json = $stmt->fetch();
+
+                if ($json["Passwd"]) {
+                    if ($email == $json["email"] && password_verify($_POST['password'], $json["Passwd"])) {
+                        $user_id = $json["Id_User"];
+                        $user_token = $json["token"];
+                        $state = 'Login Successful';
+                        $insertStmt = $pdo->prepare("INSERT INTO `login_log` (`ip`, `country`, `user_id`, `user_token`, `email`, `cpanel`, `state`)
+                                                    VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+                        $insertStmt->execute([$ip_address, $country, $user_id, $user_token, $email, $cpanel, $state]);
+                        $_SESSION['id'] = $user_id;
+                        $_SESSION['valid'] = true;
+                        $_SESSION['timeout'] = time();
+                        $_SESSION['email'] = $email;
+                        $_SESSION['level'] = "rootlevel";
+                        $_SESSION['name'] =  $json["Name"];
+                        $_SESSION['is_super'] = $json["is_super"];
+                        $_SESSION['token'] = $user_token;
+                        $_SESSION['balance'] = $json["balance"];
+
+                        header('Location:users.php');
+                        die();
+                    } else {
+                        $state = 'Invalid Credentials';
+                    }
+                } else {
+                    $state = 'Invalid Credentials';
                 }
+            } catch (Exception $e) {
+                $state = 'Database Error'; 
             }
-        } catch (Exception $e) {
-            echo $e->getMessage();  
-            header('Location:login.php');
-            die();
         }
+    } else {
+        $state = 'Missing Credentials';
     }
+} else {
+    $state = 'Invalid Request';
 }
- 
+
+$insertStmt = $pdo->prepare("INSERT INTO `login_log` (`ip`, `country`, `user_id`, `user_token`, `email`, `cpanel`, `state`)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)");
+$insertStmt->execute([$ip_address, $country, $user_id, $user_token, $email, $cpanel, $state]);
+
 header('Location:login.php');
 die();
 
+function getCountry()
+{
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        $ip_address = $_SERVER['HTTP_CLIENT_IP'];
+    }
+    //whether ip is from proxy
+    elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ip_address = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    }
+    //whether ip is from remote address
+    else {
+        $ip_address = $_SERVER['REMOTE_ADDR'];
+    }
+    $country = "";
+    try {
+        $url = "https://ipinfo.io/" . $ip_address;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $output = curl_exec($ch);
+        curl_close($ch);
+        $output1 = json_decode($output, true);
+        
+        if (isset($output1["country"])) {
+            $country =  $output1["country"];
+        }
+    } catch (Exception $e) {
+        echo $e->getMessage();
+    }
+    return $country;
+}
 
 function checkip()
 {
@@ -72,7 +201,7 @@ function checkip()
     else {
         $ip_address = $_SERVER['REMOTE_ADDR'];
     }
-
+    $country = "";
     try {
         $url = "https://ipinfo.io/" . $ip_address;
         $ch = curl_init();
@@ -81,7 +210,7 @@ function checkip()
         $output = curl_exec($ch);
         curl_close($ch);
         $output1 = json_decode($output, true);
-        $country = "";
+        
         if (isset($output1["country"])) {
             $country =  $output1["country"];
         }

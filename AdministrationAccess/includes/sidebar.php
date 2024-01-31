@@ -39,6 +39,7 @@ if (!isset($_SESSION)) {
             <!-- <li class="nav-item" role="presentation"><a id="nav_item_customer" class="nav-link" href="recieved_sms.php"><i class="far fa-address-card"></i><span>Recieved SMS</span></a></li>
             <li class="nav-item" role="presentation"><a id="nav_item_customer" class="nav-link" href="uploaded_numbers.php"><i class="far fa-address-card"></i><span>Uploaded Numbers</span></a></li> -->
             <li class="nav-item" role="presentation"><a id="nav_item_app_log_his" class="nav-link" href="historylog.php"><i class="far fa-address-card"></i><span>Application Log History</span></a></li>
+            <li class="nav-item" role="presentation"><a id="nav_item_login_logger" class="nav-link" href="login_logger.php"><i class="far fa-address-card"></i><span>Login Logger</span></a></li>
             <!-- <li class="nav-item" role="presentation"><a class="nav-link" href="register.html"><i class="fas fa-user-circle"></i><span>Register</span></a></li>
             <li class="nav-item" role="presentation"><a class="nav-link" href="forgot-password.html"><i class="fas fa-key"></i><span>Forgotten Password</span></a></li>
             <li class="nav-item" role="presentation"><a class="nav-link" href="404.html"><i class="fas fa-exclamation-circle"></i><span>Page Not Found</span></a></li>

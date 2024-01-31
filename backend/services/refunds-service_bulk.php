@@ -10,7 +10,14 @@ function write_log($message, $_file = "Log")
 	file_put_contents($filepath, $log, FILE_APPEND);
 }
 
+function balance($userId,$amount){
 
+	include '/var/www/smsmarket/html/backend/redisconfig.php';
+	$balanceKey = "balance:$userId";
+	$newBalance = $redis->incrbyfloat($balanceKey, $amount);
+	return $newBalance; 
+
+}
 
 function Update_request_logs($service, $Id_user)
 {
@@ -83,6 +90,7 @@ function Update_request_logs($service, $Id_user)
 						$updateBalanceStmt->bindParam(':refunds', $refunds, PDO::PARAM_INT);
 						$updateBalanceStmt->bindParam(':Id_user', $Id_user, PDO::PARAM_INT);
 						$updateBalanceStmt->execute();
+						balance($Id_user,$refunds);
 						echo "Refunded $refunds to User $Id_user\n";
 
 						// Insert into Transaction Table

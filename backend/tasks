@@ -104,6 +104,9 @@
     - idoor BUGGGG in add balance to user, when admin is not supper it's can add balance to any users hen he change the user Id in the request, need to be solve.
     - maybe if  non-supper admin  send two request at the same time to add balance to the user it will be bypass here balance amount, need to set lock table or use tansaction on this function
     - When adding new users no need to add user_countries for all countries , it's take long time, just add for available countries in the countries_control
+- 30-01-2024:
+    - working on balance to redis all is good need to set transaction insert only
+
 ----------------------------------------------------
 
 ----------------------------------------------------

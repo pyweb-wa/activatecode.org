@@ -1,23 +1,112 @@
 <?php
 $start = microtime(true);
 
- update_redis_numbers();
+ //update_redis_numbers();
+//move_balance();
 
-//getfromredis();
-
-
+//check_balance(19);
+simbery();
+// die(); 
+// // //getfromredis();
+// $amount = 1;
+// $b = balance($amount);
+// if($b != false){
+//     echo "Good $b";
+//     die();
+// }
+// else{
+//     echo "Lock";
+//     die();
+// }
 
 
 $end = microtime(true);
     $executionTime = $end - $start;
 
     echo "<br>Script execution time: " . $executionTime . " seconds" . PHP_EOL;
+function simbery(){
+    include '/var/www/smsmarket/html/backend/redisconfig.php';
+    $key = "simberry:SY_84_806";
+    $redis->del($key);
+//     $numbers_object = $redis->sRandMember($key,15000);
+//    // $members = $redis->sMembers('MA_35_3214');
+//     echo sizeof($numbers_object);
 
-function setpermission(){
- 
-    include '/var/www/smsmarket/html/backend/redisconfig1.php';
+
+}
+
+function check_balance($userId){
+    include '/var/www/smsmarket/html/backend/config.php';
+    $sql = "select `users`.`Id`,balance  from `users` where users.Id = ? ;";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$userId]);
+    $res = $stmt->fetchAll();
+    $mysql_balance = $res[0]['balance'];
+    include '/var/www/smsmarket/html/backend/redisconfig.php';
+   
+    $balanceKey = "balance:$userId";
+    $redis_balance = $redis->get($balanceKey);
+    echo "balance for userId :$userId\n";
+    echo "mysql_balance: $mysql_balance\n\nredis_balance: $redis_balance\n";
+    echo __FUNCTION__;
+}
+function move_balance(){
+
+    include '/var/www/smsmarket/html/backend/config.php';
+    $sql = "select `users`.`Id`,balance  from `users`;";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $res = $stmt->fetchAll();
+    if (sizeof($res) > 0) {
+        foreach($res as $item){
+            $userId = $item['Id'];
+            $balance =$item['balance'];
+            echo  "$userId - $balance\n" ;
+            include '/var/www/smsmarket/html/backend/redisconfig.php';  
+            $balanceKey = "balance:$userId";
+            $redis->set($balanceKey,$balance);
+        }
        
-
+        
+    }
+}
+function balance($amount){
+ 
+    include '/var/www/smsmarket/html/backend/redisconfig.php';
+        $userId = 29;
+        //  $balanceKey = "balance:$userId";
+        //  $lockKey = "lock:$userId";
+        //  $redis->del($lockKey);
+        // // $currentBalance = $redis->set($balanceKey,100);
+        // //    die(); 
+        // // Lock to ensure atomicity
+        // $newBalance = $redis->decrby($balanceKey, $amount);
+        // return $newBalance;
+        $lockKey = "lock:$userId";
+        $lockExists = $redis->exists($lockKey);
+        while($lockExists) {
+            $lockExists = $redis->exists($lockKey);
+            $log = "[-] ".(string) $userId . "Lock $amount  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+            file_put_contents("/var/www/smsmarket/logging/balance_lock.log", $log, FILE_APPEND);
+           usleep(5000);
+        }
+        $lockAcquired = $redis->set($lockKey, 1, ['nx' => true, 'px' => 10]); // 10 second lock
+        if (!$lockAcquired) {
+            $log = "[-] ".(string) $userId . "Lock22 $amount  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+        
+            file_put_contents("/var/www/smsmarket/logging/balance_lock.log", $log, FILE_APPEND);
+            return false;
+        }
+        $balanceKey = "balance:$userId";
+        $currentBalance = $redis->get($balanceKey);
+        if ($currentBalance === false || $currentBalance < $amount) {
+            $redis->del($lockKey); // Release the lock
+            return false;
+        }
+        // Deduct from balance
+        $newBalance = $redis->incrbyfloat($balanceKey, -$amount);
+        $redis->del($lockKey);
+        return $newBalance;       
 }
 
 

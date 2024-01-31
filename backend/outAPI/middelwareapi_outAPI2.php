@@ -214,6 +214,43 @@ class out_api
         return $final_api_list;
     }
 
+    public function balance($api_key,$amount){
+
+        $sql = "select `users`.`Id` as userId from `users` left JOIN `tokens` on `users`.`Id` = `tokens`.`userID` WHERE `tokens`.`access_Token` = ?;";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$api_key]);
+        $res = $stmt->fetchAll();
+        if (sizeof($res) > 0) {
+        $userId = $res[0]['userId'];
+        include '/var/www/smsmarket/html/backend/redisconfig.php';
+        $lockKey = "lock:$userId";
+        $lockExists = $redis->exists($lockKey);
+        while($lockExists) {
+            $lockExists = $redis->exists($lockKey);
+            $log = "[-] ".(string) $userId . "Lock $amount  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+            file_put_contents("/var/www/smsmarket/logging/balance_lock.log", $log, FILE_APPEND);
+           usleep(5000);
+        }
+        $lockAcquired = $redis->set($lockKey, 1, ['nx' => true, 'px' => 10]); // 10 second lock
+        if (!$lockAcquired) {
+            $log = "[-] ".(string) $userId . "Lock22 $amount  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+        
+            file_put_contents("/var/www/smsmarket/logging/balance_lock.log", $log, FILE_APPEND);
+            return false;
+        }
+        $balanceKey = "balance:$userId";
+        $currentBalance = $redis->get($balanceKey);
+        if ($currentBalance === false || $currentBalance < $amount) {
+            $redis->del($lockKey); // Release the lock
+            return false;
+        }
+        // Deduct from balance
+        $newBalance = $redis->incrbyfloat($balanceKey, -$amount);
+        $redis->del($lockKey);
+        return $newBalance; 
+    }      
+    }
+
     public function getnumber($api_key, $appCode, $country, $carrier = "", $available = 0, $count = 1)
     {
       
@@ -286,7 +323,7 @@ class out_api
             $res = $stmt->fetchAll();
             $stmt->closeCursor();
             $res = $res[0];
-           
+
             if(isset($res['balance'])){
                 $balance =  floatval($res['balance']);
                 $count = floatval($count);
@@ -308,7 +345,7 @@ class out_api
             
            
             $flag = $res['flag'];
-            // echo $flag;die();
+
             if ($flag == "ok") {
                 $fapi_id = $res['fapi_id'];
                 $serv_id = $res['serv_id'];
@@ -316,12 +353,11 @@ class out_api
                 $balance = $res['balance'];
                 # loop  on apis to get number
                 # new select query to get service_of_api for each fapi with other params
-                // var_dump($allowed_services);die();
+               // var_dump($allowed_services);die();
                 foreach ($allowed_services as $f_apiO) {
                     $f_api = $f_apiO["id"];
                     #get fapi name to compare and service of api
-                  //  echo $f_api;
-                   
+                    
                     $paramslist = [$f_api, $country, $appCode];
                     if ($carrier != "") {
                         $query = "SELECT   `foreignapi`.`Name`, `foreignapiservice`.`service_of_api`, `foreignapiservice`.`Id_Service_Api` ,`foreignapiservice`.`country_of_api`    FROM `foreignapi`,`foreignapiservice`  WHERE `foreignapi`.`is_deleted`=0 and `foreignapiservice`.`is_deleted`=0 and  `foreignapi`.`Id_Api`=? and `country`=?  and `code`=? and `carrier`=? and  Id_Foreign_Api=Id_Api";
@@ -417,7 +453,9 @@ class out_api
                             $result->CountryCode = $CountryCode;
 
                             }
-                            
+                            ##########balance_in_redis###########
+                            $status = $this->balance($api_key,$cost*$count);
+
                             ######################
                             #if user came from web update balance in session
                             if (isset($_SESSION['balance'])) {

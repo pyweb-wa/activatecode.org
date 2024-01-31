@@ -75,7 +75,7 @@ function deletenumberfromAllServers($number,$flag=false){
     ],
   ]);
   $response = curl_exec($curl);
-  file_put_contents($logging, $response."/n", FILE_APPEND | LOCK_EX);
+  //file_put_contents($logging, $response."/n", FILE_APPEND | LOCK_EX);
 
   $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
   if ($httpCode === 401) {
@@ -90,8 +90,10 @@ function deletenumberfromAllServers($number,$flag=false){
   curl_close($curl);
   
   if ($err) {
-    file_put_contents($logging, "cURL Error #:" . $err."\n", FILE_APPEND | LOCK_EX);
-    //echo "cURL Error #:" . $err;
+    $log = "[-] cURL Error: ".(string) $err . " ==> function: " . __FUNCTION__ . "  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+    $logging = "/var/www/smsmarket/logging/simberry_error.log";
+    file_put_contents($logging, $log, FILE_APPEND | LOCK_EX);
+    echo "cURL Error #:" . $err;
   } else {
    
    // echo $response;
@@ -138,7 +140,10 @@ function deletenumberfromServer($server,$number,$flag=false){
     curl_close($curl);
     
     if ($err) {
-      file_put_contents($logging, "cURL Error #:" . $err."\n", FILE_APPEND | LOCK_EX);
+      $log = "[-] cURL Error: ".(string) $err . " ==> function: " . __FUNCTION__ . "  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+    $logging = "/var/www/smsmarket/logging/simberry_error.log";
+    file_put_contents($logging, $log, FILE_APPEND | LOCK_EX);
+    echo "cURL Error #:" . $err;
     } else {
      // echo $response;
     }
@@ -187,7 +192,10 @@ function deletenumberArrayfromServer($server,$array,$flag=false){
   curl_close($curl);
 
   if ($err) {
-    file_put_contents($logging, "cURL Error #:" . $err."\n", FILE_APPEND | LOCK_EX);
+    $log = "[-] cURL Error: ".(string) $err . " ==> function: " . __FUNCTION__ . "  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+    $logging = "/var/www/smsmarket/logging/simberry_error.log";
+    file_put_contents($logging, $log, FILE_APPEND | LOCK_EX);
+    echo "cURL Error #:" . $err;
   } else {
     echo $response;
   }
@@ -242,7 +250,10 @@ function AddNumberToList($server,$number,$list_id,$flag=false){
   curl_close($curl);
   
   if ($err) {
-    file_put_contents($logging, "cURL Error #:" . $err."\n", FILE_APPEND | LOCK_EX);
+    $log = "[-] cURL Error: ".(string) $err . " ==> function: " . __FUNCTION__ . "  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+    $logging = "/var/www/smsmarket/logging/simberry_error.log";
+    file_put_contents($logging, $log, FILE_APPEND | LOCK_EX);
+    echo "cURL Error #:" . $err;
   } else {
   //  echo $response;
   }
@@ -296,7 +307,7 @@ if (!function_exists('AddArrayToList')) {
     $response = curl_exec($curl);
     $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     if ($httpCode === 401) {
-       // echo "Unauthorized: The request requires user authentication.";
+       echo "Unauthorized: The request requires user authentication.\n";
         UpdateTokens();
         if(!$flag){
         AddNumberToList($server,$number,$list_id,true);
@@ -308,9 +319,12 @@ if (!function_exists('AddArrayToList')) {
     curl_close($curl);
     
     if ($err) {
-      file_put_contents($logging, "cURL Error #:" . $err."\n", FILE_APPEND | LOCK_EX);
+      $log = "[-] cURL Error: ".(string) $err . " ==> function: " . __FUNCTION__ . " Array size: ".count($decodedArray)."  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+    $logging = "/var/www/smsmarket/logging/simberry_error.log";
+    file_put_contents($logging, $log, FILE_APPEND | LOCK_EX);
+    echo "cURL Error #:" . $err;
     } else {
-     // echo $response;
+     return $response;
     }
   
   }
@@ -361,7 +375,10 @@ function GetTokensFromServer($server){
   curl_close($curl);
   
   if ($err) {
-    file_put_contents($logging, "cURL Error #:" . $err."\n", FILE_APPEND | LOCK_EX);
+    $log = "[-] cURL Error: ".(string) $err . " ==> function: " . __FUNCTION__ . "  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+    $logging = "/var/www/smsmarket/logging/simberry_error.log";
+    file_put_contents($logging, $log, FILE_APPEND | LOCK_EX);
+    echo "cURL Error #:" . $err;
   } else {
     $response = json_decode($response,True);
     if(isset($response['session'])){
@@ -372,7 +389,10 @@ function GetTokensFromServer($server){
     }
   }
     } catch (Exception $e) {
-      file_put_contents($logging, "cURL Error =>e #:" . $e."\n", FILE_APPEND | LOCK_EX);
+      $log = "[-] Exception Error: ".(string) $e . " ==> function: " . __FUNCTION__ . "  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+    $logging = "/var/www/smsmarket/logging/simberry_error.log";
+    file_put_contents($logging, $log, FILE_APPEND | LOCK_EX);
+    echo "Exception Error #:" . $e;
     }
       
       

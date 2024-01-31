@@ -24,6 +24,7 @@ if (isset($_POST['amount'])) {
             $gift = (float)$_POST['gift'];
             $is_super = $_SESSION['is_super'];
             $admin_id = $_SESSION['id'];
+            // echo 444;die();
             // $_SESSION['balance'] = $_SESSION['balance'] - $amount;
             $stmt = $pdo->prepare("CALL PerformRecharge(?, ?, ?, ?, ?)");
             $stmt->bindParam(1, $user_id, PDO::PARAM_INT);
@@ -33,8 +34,13 @@ if (isset($_POST['amount'])) {
             $stmt->bindParam(5, $admin_id, PDO::PARAM_INT);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
- 
+            
+            
+
             if ($result['status'] === 'Success') {
+                include '/var/www/smsmarket/html/backend/redisconfig.php';
+                $balanceKey = "balance:$user_id";
+                $redis->incrbyfloat($balanceKey, $amount);
                 echo "Success";
             } else {
                 echo "Error: " . $result['status'];

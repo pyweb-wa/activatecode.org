@@ -3,18 +3,19 @@
 while(true)
 {
     Featch_From_Redis();
-    sleep(2);
+    sleep(1);
 }
 function Featch_From_Redis(){
 require '/var/www/smsmarket/html/backend/redisconfig.php';
 $keys = $redis->keys('simberry:*');
-var_dump($keys);
+//var_dump($keys);
 if($keys){
     foreach($keys as $key){
-        echo "Start with $key\n";
-        $numbers_object = $redis->smembers($key);   
+        
+      //  $numbers_object = $redis->smembers($key);
+        $numbers_object = $redis->sRandMember($key,5000);   
         $numbers = json_encode($numbers_object,true);
-        echo "$numbers\n";
+        echo "Start with ".$key." ==> count:".count($numbers_object)."\n";
         $parts = explode(':', $key);
         $source = $parts[1];
         $status = call_simberry($source,$numbers);
@@ -27,6 +28,9 @@ if($keys){
                 $redisKey = 'todelete:'.$source;
                 $redis->zadd($redisKey, $currentTime, $number);
              }
+        }
+        else{
+            echo "error when sending data\n";
         }
         
     }

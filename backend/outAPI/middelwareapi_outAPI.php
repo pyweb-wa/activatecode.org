@@ -213,6 +213,42 @@ class out_api
 
         return $final_api_list;
     }
+    public function balance($api_key,$amount){
+
+        $sql = "select `users`.`Id` as userId from `users` left JOIN `tokens` on `users`.`Id` = `tokens`.`userID` WHERE `tokens`.`access_Token` = ?;";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$api_key]);
+        $res = $stmt->fetchAll();
+        if (sizeof($res) > 0) {
+        $userId = $res[0]['userId'];
+        include '/var/www/smsmarket/html/backend/redisconfig.php';
+        $lockKey = "lock:$userId";
+        $lockExists = $redis->exists($lockKey);
+        while($lockExists) {
+            $lockExists = $redis->exists($lockKey);
+            $log = "[-] ".(string) $userId . "Lock $amount  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+            file_put_contents("/var/www/smsmarket/logging/balance_lock.log", $log, FILE_APPEND);
+           usleep(5000);
+        }
+        $lockAcquired = $redis->set($lockKey, 1, ['nx' => true, 'px' => 10]); // 10 second lock
+        if (!$lockAcquired) {
+            $log = "[-] ".(string) $userId . "Lock22 $amount  datetime: " . date('m/d/Y h:i:s a', time()) . "\n";
+        
+            file_put_contents("/var/www/smsmarket/logging/balance_lock.log", $log, FILE_APPEND);
+            return false;
+        }
+        $balanceKey = "balance:$userId";
+        $currentBalance = $redis->get($balanceKey);
+        if ($currentBalance === false || $currentBalance < $amount) {
+            $redis->del($lockKey); // Release the lock
+            return false;
+        }
+        // Deduct from balance
+        $newBalance = $redis->incrbyfloat($balanceKey, -$amount);
+        $redis->del($lockKey);
+        return $newBalance; 
+    }      
+    }
 
     public function getnumber($api_key, $appCode, $country, $carrier = "", $available = 0, $count = 1)
     {
@@ -416,7 +452,8 @@ class out_api
                             $result->CountryCode = $CountryCode;
 
                             }
-                            
+                             ##########balance_in_redis###########
+                             $status = $this->balance($api_key,$cost*$count);
                             ######################
                             #if user came from web update balance in session
                             if (isset($_SESSION['balance'])) {
